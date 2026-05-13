@@ -383,6 +383,8 @@ img { max-width: 100%; display: block; }
 .hero-text {
     color: var(--white);
     will-change: opacity, transform;
+    opacity: 0;
+    transform: translateY(30px);
 }
 
 .hero-label {
