@@ -345,6 +345,16 @@ img { max-width: 100%; display: block; }
     object-fit: cover;
     transform: scale(1.15); /* ingrandisce per spingere filigrana fuori dal frame */
     z-index: 0;
+    pointer-events: none; /* Impedisce la comparsa di tasti play o menu contestuali */
+}
+
+/* Rimuove tasti play residui su Safari/Chrome */
+.hero-bg-video::-webkit-media-controls-start-playback-button {
+    display: none !important;
+    -webkit-appearance: none;
+}
+.hero-bg-video::-webkit-media-controls {
+    display: none !important;
 }
 
 .hero-overlay {
