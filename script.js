@@ -91,26 +91,45 @@ const heroText    = document.getElementById('heroText');
 
 if (shipVideo && heroSection) {
     let rafPending = false;
+    let videoUnlocked = false;
+
+    // Funzione per sbloccare il video su mobile (richiede un "play" iniziale)
+    const unlockVideo = () => {
+        if (videoUnlocked) return;
+        shipVideo.play().then(() => {
+            shipVideo.pause();
+            videoUnlocked = true;
+            scrub();
+        }).catch(() => {
+            // Autoplay potrebbe essere bloccato finché non c'è interazione
+        });
+    };
 
     const doScrub = () => {
         rafPending = false;
 
-        const heroH     = heroSection.offsetHeight;  // 200vh
-        const vpH       = window.innerHeight;         // 100vh
-        const maxScroll = Math.max(1, heroH - vpH);  // range: 100vh
-        const progress  = Math.max(0, Math.min(1, window.scrollY / maxScroll));
+        const rect      = heroSection.getBoundingClientRect();
+        const heroH     = heroSection.offsetHeight;
+        const vpH       = window.innerHeight;
+        
+        // Calcolo progresso basato sulla posizione della sezione rispetto alla viewport
+        // Quando la sezione inizia a uscire (top < 0), iniziamo lo scrub
+        const scrollDistance = -rect.top;
+        const maxScroll      = heroH - vpH;
+        const progress       = Math.max(0, Math.min(1, scrollDistance / maxScroll));
 
-        // --- scrub video ---
-        if (shipVideo.duration) {
-            shipVideo.currentTime = progress * shipVideo.duration;
+        if (shipVideo.duration && !isNaN(shipVideo.duration)) {
+            // Su mobile il currentTime può essere pigro, cerchiamo di non aggiornarlo se il delta è minimo
+            const targetTime = progress * shipVideo.duration;
+            if (Math.abs(shipVideo.currentTime - targetTime) > 0.04) {
+                shipVideo.currentTime = targetTime;
+            }
         }
 
-        // --- text reveal: compare nella seconda metà dell'animazione ---
         if (heroText) {
-            // 0 fino a progress 0.5, poi sale a 1 entro progress 1.0
-            const t = Math.max(0, Math.min(1, (progress - 0.5) / 0.5));
+            const t = Math.max(0, Math.min(1, (progress - 0.4) / 0.4));
             heroText.style.opacity   = t;
-            heroText.style.transform = `translateY(${(1 - t) * 40}px)`;
+            heroText.style.transform = `translateY(${(1 - t) * 30}px)`;
         }
     };
 
@@ -121,11 +140,17 @@ if (shipVideo && heroSection) {
         }
     };
 
-    shipVideo.addEventListener('loadedmetadata', () => {
-        shipVideo.pause();
-        scrub();
-    });
+    shipVideo.addEventListener('loadedmetadata', unlockVideo);
+    shipVideo.addEventListener('canplay', unlockVideo);
+    
+    // Fallback se gli eventi non scattano subito
+    setTimeout(unlockVideo, 1000);
 
     window.addEventListener('scroll', scrub, { passive: true });
-    scrub(); // stato iniziale: progress = 0, testo invisibile
+    window.addEventListener('resize', scrub, { passive: true });
+    
+    // Sblocca anche al primo touch/scroll per sicurezza su alcuni browser mobile
+    window.addEventListener('touchstart', unlockVideo, { once: true, passive: true });
+    
+    scrub();
 }

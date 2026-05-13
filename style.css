@@ -332,7 +332,7 @@ img { max-width: 100%; display: block; }
 .hero-sticky {
     position: sticky;
     top: 0;
-    height: 100vh;
+    height: 100dvh;
     overflow: hidden;
 }
 
@@ -939,7 +939,8 @@ footer { background: var(--dark-brown); color: var(--white); }
     .nav-cta { display: none; }
     .mobile-menu-btn { display: flex; }
 
-    .hero { min-height: 150vh; }
+    .hero { min-height: 250vh; }
+    .hero-sticky { height: 100dvh; }
     .hero-content { grid-template-columns: 1fr; gap: 40px; text-align: center; }
     .hero-sub { margin: 0 auto 40px; }
     .hero-actions { justify-content: center; }
