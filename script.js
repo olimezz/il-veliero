@@ -91,17 +91,18 @@ const heroText    = document.getElementById('heroText');
 
 if (shipVideo && heroSection) {
     let rafPending = false;
-    let videoUnlocked = false;
+    let videoReady = false;
 
-    // Funzione per sbloccare il video su mobile (richiede un "play" iniziale)
-    const unlockVideo = () => {
-        if (videoUnlocked) return;
+    // Impostiamo una velocità quasi zero: il video è "in riproduzione" (nessun overlay del browser)
+    // ma di fatto è fermo. Poi scrubbiamo manualmente il currentTime.
+    const initVideo = () => {
+        if (videoReady) return;
+        shipVideo.playbackRate = 0.00001; // quasi fermo ma mai "paused"
         shipVideo.play().then(() => {
-            shipVideo.pause();
-            videoUnlocked = true;
+            videoReady = true;
             scrub();
         }).catch(() => {
-            // Autoplay potrebbe essere bloccato finché non c'è interazione
+            // Su alcuni browser l'autoplay può essere bloccato fino all'interazione dell'utente
         });
     };
 
@@ -111,15 +112,12 @@ if (shipVideo && heroSection) {
         const rect      = heroSection.getBoundingClientRect();
         const heroH     = heroSection.offsetHeight;
         const vpH       = window.innerHeight;
-        
-        // Calcolo progresso basato sulla posizione della sezione rispetto alla viewport
-        // Quando la sezione inizia a uscire (top < 0), iniziamo lo scrub
+
         const scrollDistance = -rect.top;
-        const maxScroll      = heroH - vpH;
+        const maxScroll      = Math.max(1, heroH - vpH);
         const progress       = Math.max(0, Math.min(1, scrollDistance / maxScroll));
 
-        if (shipVideo.duration && !isNaN(shipVideo.duration)) {
-            // Su mobile il currentTime può essere pigro, cerchiamo di non aggiornarlo se il delta è minimo
+        if (videoReady && shipVideo.duration && !isNaN(shipVideo.duration)) {
             const targetTime = progress * shipVideo.duration;
             if (Math.abs(shipVideo.currentTime - targetTime) > 0.04) {
                 shipVideo.currentTime = targetTime;
@@ -140,17 +138,17 @@ if (shipVideo && heroSection) {
         }
     };
 
-    shipVideo.addEventListener('loadedmetadata', unlockVideo);
-    shipVideo.addEventListener('canplay', unlockVideo);
-    
-    // Fallback se gli eventi non scattano subito
-    setTimeout(unlockVideo, 1000);
+    shipVideo.addEventListener('loadedmetadata', initVideo);
+    shipVideo.addEventListener('canplay', initVideo);
+
+    // Fallback: prova ad inizializzare dopo 500ms
+    setTimeout(initVideo, 500);
+
+    // Su mobile sblocca al primo tocco
+    window.addEventListener('touchstart', initVideo, { once: true, passive: true });
 
     window.addEventListener('scroll', scrub, { passive: true });
     window.addEventListener('resize', scrub, { passive: true });
-    
-    // Sblocca anche al primo touch/scroll per sicurezza su alcuni browser mobile
-    window.addEventListener('touchstart', unlockVideo, { once: true, passive: true });
-    
+
     scrub();
 }
