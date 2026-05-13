@@ -326,7 +326,7 @@ img { max-width: 100%; display: block; }
    ============================================== */
 .hero {
     position: relative;
-    min-height: 200vh;
+    min-height: 140vh;
 }
 
 .hero-sticky {
@@ -939,7 +939,7 @@ footer { background: var(--dark-brown); color: var(--white); }
     .nav-cta { display: none; }
     .mobile-menu-btn { display: flex; }
 
-    .hero { min-height: 250vh; }
+    .hero { min-height: 160vh; }
     .hero-sticky { height: 100dvh; }
     .hero-content { grid-template-columns: 1fr; gap: 40px; text-align: center; }
     .hero-sub { margin: 0 auto 40px; }
