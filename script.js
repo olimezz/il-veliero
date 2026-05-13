@@ -84,71 +84,91 @@ document.querySelectorAll('.stat-num').forEach(el => countObserver.observe(el));
 
 // ============================
 // HERO VIDEO SCROLL SCRUB + TEXT REVEAL
+// Lerp-based smooth scrubbing in both scroll directions
 // ============================
 const shipVideo   = document.getElementById('shipAnim');
 const heroSection = document.getElementById('home');
 const heroText    = document.getElementById('heroText');
 
 if (shipVideo && heroSection) {
-    let rafPending = false;
-    let videoReady = false;
+    let duration        = 0;
+    let rafId           = null;
+    let targetProgress  = 0;   // dove lo scroll VUOLE che siamo
+    let currentProgress = 0;   // dove il video SI TROVA effettivamente
 
-    // Impostiamo una velocità quasi zero: il video è "in riproduzione" (nessun overlay del browser)
-    // ma di fatto è fermo. Poi scrubbiamo manualmente il currentTime.
-    const initVideo = () => {
-        if (videoReady) return;
-        shipVideo.playbackRate = 0.00001; // quasi fermo ma mai "paused"
-        shipVideo.play().then(() => {
-            videoReady = true;
-            scrub();
-        }).catch(() => {
-            // Su alcuni browser l'autoplay può essere bloccato fino all'interazione dell'utente
-        });
+    // Fattore di lerp: 0.1 = fluido e morbido, 0.2 = più reattivo
+    const LERP = 0.10;
+
+    // ---- Calcola il progresso target dallo scroll corrente ----
+    const getTargetProgress = () => {
+        const rect     = heroSection.getBoundingClientRect();
+        const heroH    = heroSection.offsetHeight;
+        const vpH      = window.innerHeight;
+        const scrolled = -rect.top;
+        const maxScroll = Math.max(1, heroH - vpH);
+        return Math.max(0, Math.min(1, scrolled / maxScroll));
     };
 
-    const doScrub = () => {
-        rafPending = false;
+    // ---- Loop RAF: interpola e aggiorna il video ----
+    const animate = () => {
+        const diff = targetProgress - currentProgress;
 
-        const rect      = heroSection.getBoundingClientRect();
-        const heroH     = heroSection.offsetHeight;
-        const vpH       = window.innerHeight;
+        // Ferma il loop quando la differenza è trascurabile
+        if (Math.abs(diff) < 0.0003) {
+            currentProgress = targetProgress;
+            rafId = null;
+            return;
+        }
 
-        const scrollDistance = -rect.top;
-        const maxScroll      = Math.max(1, heroH - vpH);
-        const progress       = Math.max(0, Math.min(1, scrollDistance / maxScroll));
+        // Lerp: sposta currentProgress verso targetProgress
+        currentProgress += diff * LERP;
 
-        if (videoReady && shipVideo.duration && !isNaN(shipVideo.duration)) {
-            const targetTime = progress * shipVideo.duration;
-            if (Math.abs(shipVideo.currentTime - targetTime) > 0.04) {
-                shipVideo.currentTime = targetTime;
+        if (duration) {
+            const t = currentProgress * duration;
+            // Imposta currentTime solo se il delta è visibile (≥ 1 frame a 30fps)
+            if (Math.abs(shipVideo.currentTime - t) > 0.016) {
+                shipVideo.currentTime = t;
             }
         }
 
+        // Reveal del testo hero
         if (heroText) {
-            const t = Math.max(0, Math.min(1, (progress - 0.4) / 0.4));
-            heroText.style.opacity   = t;
-            heroText.style.transform = `translateY(${(1 - t) * 30}px)`;
+            const fadeT = Math.max(0, Math.min(1, (currentProgress - 0.4) / 0.4));
+            heroText.style.opacity   = fadeT;
+            heroText.style.transform = `translateY(${(1 - fadeT) * 30}px)`;
         }
+
+        rafId = requestAnimationFrame(animate);
     };
 
-    const scrub = () => {
-        if (!rafPending) {
-            rafPending = true;
-            requestAnimationFrame(doScrub);
-        }
+    // ---- Kick-off del loop ----
+    const startLoop = () => {
+        targetProgress = getTargetProgress();
+        if (!rafId) rafId = requestAnimationFrame(animate);
     };
 
-    shipVideo.addEventListener('loadedmetadata', initVideo);
-    shipVideo.addEventListener('canplay', initVideo);
+    // ---- Init: quando i metadati del video sono disponibili ----
+    const init = () => {
+        if (duration) return; // già inizializzato
+        duration = shipVideo.duration;
+        shipVideo.currentTime = 0;
+        startLoop();
+    };
 
-    // Fallback: prova ad inizializzare dopo 500ms
-    setTimeout(initVideo, 500);
+    shipVideo.addEventListener('loadedmetadata', init);
+    shipVideo.addEventListener('canplay',        init);
 
-    // Su mobile sblocca al primo tocco
-    window.addEventListener('touchstart', initVideo, { once: true, passive: true });
+    // Fallback: video già in cache
+    if (shipVideo.readyState >= 1 && shipVideo.duration) init();
 
-    window.addEventListener('scroll', scrub, { passive: true });
-    window.addEventListener('resize', scrub, { passive: true });
+    window.addEventListener('scroll', startLoop, { passive: true });
+    window.addEventListener('resize', startLoop, { passive: true });
 
-    scrub();
+    // --- Mobile: sblocca il seeking al primo tocco ----
+    window.addEventListener('touchstart', () => {
+        shipVideo.play().then(() => {
+            shipVideo.pause();
+            startLoop();
+        }).catch(() => {});
+    }, { once: true, passive: true });
 }
