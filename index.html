@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Il Veliero — Stabilimento Balneare di Lusso</title>
+    <meta name="description" content="Il Veliero è il tuo approdo di relax. Scopri l'eleganza del mare unita al massimo comfort. Spiaggia, ristorante e servizi esclusivi a Montesilvano.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+
+    <!-- NAV -->
+    <header id="header">
+        <div class="nav-inner">
+            <div class="logo">
+                <svg viewBox="0 0 48 48" width="28" height="28" fill="none">
+                    <circle cx="24" cy="24" r="21" stroke="currentColor" stroke-width="2"/>
+                    <path d="M24 6 L24 42 M8 20 Q24 15 40 20 M8 32 Q24 27 40 32" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    <path d="M15 9 Q24 22 24 42" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+                </svg>
+                <span>Il Veliero</span>
+            </div>
+            <nav class="desktop-nav">
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#chi-siamo">La Spiaggia</a></li>
+
+                    <li><a href="#galleria">Galleria</a></li>
+
+                    <li><a href="#come-raggiungerci">Raggiungerci</a></li>
+                </ul>
+            </nav>
+            <a href="#come-raggiungerci" class="nav-cta">Prenota</a>
+            <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+        <div class="mobile-nav" id="mobileNav">
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#chi-siamo">La Spiaggia</a></li>
+
+                <li><a href="#galleria">Galleria</a></li>
+
+                <li><a href="#come-raggiungerci">Come Raggiungerci</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- HERO -->
+    <section id="home" class="hero">
+        <div class="hero-sticky">
+
+            <!-- Video come sfondo a piena sezione, scroll-linked -->
+            <video id="shipAnim" class="hero-bg-video"
+                   src="nave.mp4"
+                   muted preload="auto" playsinline></video>
+
+            <div class="hero-overlay"></div>
+
+            <!-- Testo dinamico: compare durante lo scroll via JS -->
+            <div class="hero-text-wrap">
+                <div class="hero-text" id="heroText">
+                    <p class="hero-label">Stabilimento Balneare · Montesilvano</p>
+                    <h1 class="hero-title">Il Veliero</h1>
+                    <p class="hero-sub">L'essenza del mare, ricostruita in ogni dettaglio.<br>Un'esperienza di lusso tra tradizione e innovazione.</p>
+                    <div class="hero-actions">
+                        <a href="#come-raggiungerci" class="btn btn-glass">Prenota Ora</a>
+                        <a href="#chi-siamo" class="btn btn-ghost">Scopri →</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scroll-hint">
+                <span>Scorri</span>
+                <div class="scroll-line"></div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- STATS STRIP -->
+    <div class="stats-strip">
+        <div class="container stats-grid">
+            <div class="stat-item">
+                <div class="stat-value"><span class="stat-num" data-target="55">0</span></div>
+                <p class="stat-label">Anni di Esperienza</p>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value"><span class="stat-num" data-target="500">0</span><span class="stat-plus">+</span></div>
+                <p class="stat-label">Ospiti ogni Stagione</p>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value"><span class="stat-num" data-target="100">0</span><span class="stat-plus">%</span></div>
+                <p class="stat-label">Soddisfazione</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHI SIAMO -->
+    <section id="chi-siamo" class="section about-section">
+        <div class="container">
+            <p class="section-tag reveal">La Nostra Storia</p>
+            <h2 class="section-heading reveal">Benvenuti a Bordo</h2>
+            <p class="section-lead reveal">Benvenuti a bordo de <strong>Il Veliero</strong>, un'oasi di pace dove la tradizione marinara si fonde con il lusso contemporaneo. Da decenni, la nostra missione è guidare i nostri ospiti in un viaggio sensoriale fatto di sabbia finissima, brezza marina e un servizio impeccabile.</p>
+            <div class="two-col">
+                <div class="glass-panel reveal">
+                    <div class="panel-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    </div>
+                    <h3>La Nostra Missione</h3>
+                    <p>Trasformare ogni visita in un'esperienza indimenticabile. Offriamo spazi curati, servizi premium e un'atmosfera di pace che invita alla vera vacanza.</p>
+                </div>
+                <div class="glass-panel reveal r-delay-1">
+                    <div class="panel-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </div>
+                    <h3>La Nostra Visione</h3>
+                    <p>Essere il punto di riferimento del litorale romagnolo per chi cerca non solo una spiaggia, ma un vero rifugio dall'ordinario, fatto di eleganza e autenticità.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TAGLINE BANNER -->
+    <div class="tagline-banner">
+        <div class="container">
+            <h2 class="tagline-text reveal">Dal Tramonto all'Alba,<br>Ogni Momento è un Capolavoro.</h2>
+        </div>
+    </div>
+
+
+
+
+    <!-- EXCELLENCE BANNER -->
+    <div class="excellence-banner">
+        <div class="container">
+            <p class="excellence-tag reveal">Perché Sceglierci</p>
+            <h2 class="excellence-title reveal">Eccellenza Strategica<br>in ogni Metro di Spiaggia.</h2>
+            <p class="excellence-sub reveal">La nostra spiaggia è uno spazio dove la qualità non è mai un'opzione, ma uno standard. Ogni dettaglio è pensato per rendere la tua esperienza indimenticabile.</p>
+        </div>
+    </div>
+
+
+    <!-- GALLERIA -->
+    <section id="galleria" class="section gallery-section">
+        <div class="container">
+            <p class="section-tag reveal">Il Giornale di Bordo</p>
+            <h2 class="section-heading reveal">Galleria Fotografica</h2>
+        </div>
+        <div class="gallery-slider-wrap reveal">
+            <div class="gallery-slider-track">
+                <!-- Original Items -->
+                <div class="gallery-slider-item">
+                    <img src="immagine1.png" alt="Il meglio per ognuno dei nostri ospiti">
+                    <div class="gallery-overlay">
+                        <h4>Il meglio per ognuno dei nostri ospiti</h4>
+                    </div>
+                </div>
+                <div class="gallery-slider-item">
+                    <img src="immagine2.png" alt="Dove il tempo sembra fermarsi">
+                    <div class="gallery-overlay">
+                        <h4>Dove il tempo sembra fermarsi</h4>
+                    </div>
+                </div>
+                <div class="gallery-slider-item">
+                    <img src="immagine3.png" alt="Un'emozione da vivere ad occhi aperti">
+                    <div class="gallery-overlay">
+                        <h4>Un'emozione da vivere ad occhi aperti</h4>
+                    </div>
+                </div>
+                <div class="gallery-slider-item">
+                    <img src="immagine4.jpg" alt="L'eccellenza che meriti ogni giorno">
+                    <div class="gallery-overlay">
+                        <h4>L'eccellenza che meriti ogni giorno</h4>
+                    </div>
+                </div>
+                <div class="gallery-slider-item">
+                    <img src="immagine5.jpg" alt="Sentirsi a casa, cullati dalle onde">
+                    <div class="gallery-overlay">
+                        <h4>Sentirsi a casa, cullati dalle onde</h4>
+                    </div>
+                </div>
+                <div class="gallery-slider-item">
+                    <img src="immagine6.jpg" alt="Piccoli dettagli che fanno la differenza">
+                    <div class="gallery-overlay">
+                        <h4>Piccoli dettagli che fanno la differenza</h4>
+                    </div>
+                </div>
+                <!-- Cloned Items for Infinite Loop -->
+                <div class="gallery-slider-item">
+                    <img src="immagine1.png" alt="Il meglio per ognuno dei nostri ospiti">
+                    <div class="gallery-overlay">
+                        <h4>Il meglio per ognuno dei nostri ospiti</h4>
+                    </div>
+                </div>
+                <div class="gallery-slider-item">
+                    <img src="immagine2.png" alt="Dove il tempo sembra fermarsi">
+                    <div class="gallery-overlay">
+                        <h4>Dove il tempo sembra fermarsi</h4>
+                    </div>
+                </div>
+                <div class="gallery-slider-item">
+                    <img src="immagine3.png" alt="Un'emozione da vivere ad occhi aperti">
+                    <div class="gallery-overlay">
+                        <h4>Un'emozione da vivere ad occhi aperti</h4>
+                    </div>
+                </div>
+                <div class="gallery-slider-item">
+                    <img src="immagine4.jpg" alt="L'eccellenza che meriti ogni giorno">
+                    <div class="gallery-overlay">
+                        <h4>L'eccellenza che meriti ogni giorno</h4>
+                    </div>
+                </div>
+                <div class="gallery-slider-item">
+                    <img src="immagine5.jpg" alt="Sentirsi a casa, cullati dalle onde">
+                    <div class="gallery-overlay">
+                        <h4>Sentirsi a casa, cullati dalle onde</h4>
+                    </div>
+                </div>
+                <div class="gallery-slider-item">
+                    <img src="immagine6.jpg" alt="Piccoli dettagli che fanno la differenza">
+                    <div class="gallery-overlay">
+                        <h4>Piccoli dettagli che fanno la differenza</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- COME RAGGIUNGERCI -->
+    <section id="come-raggiungerci" class="section mappa-section">
+        <div class="container">
+            <p class="section-tag reveal">Vieni a Trovarci</p>
+            <h2 class="section-heading reveal">Come Raggiungerci</h2>
+            <div class="mappa-grid">
+                <div class="mappa-info reveal">
+                    <div class="mappa-info-item">
+                        <strong>Indirizzo</strong>
+                        <p>Via Aldo Moro, 26, 65015 Montesilvano (PE)</p>
+                    </div>
+                    <div class="mappa-info-item">
+                        <strong>Telefono</strong>
+                        <p>+39 393 121 0494</p>
+                    </div>
+                    <div class="mappa-info-item">
+                        <strong>Orari</strong>
+                        <p>08:00 – 23:30</p>
+                    </div>
+                    <div class="mappa-actions">
+                        <a href="https://maps.app.goo.gl/9duXtSSkMRMRejIKbYoDYe8" target="_blank" class="btn btn-glass-dark">Calcola Percorso</a>
+                    </div>
+                </div>
+                <div class="mappa-frame-wrap reveal r-delay-1">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2932.5517332214643!2d14.152349776595568!3d42.52250267117865!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1331a424b597dbf5%3A0xef61038a6d0a327a!2sIl%20Veliero!5e0!3m2!1sit!2sit!4v1715080000000!5m2!1sit!2sit" width="100%" height="450" style="border:0; border-radius:15px;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-top">
+            <div class="container footer-top-inner">
+                <div class="footer-brand">
+                    <svg viewBox="0 0 48 48" width="32" height="32" fill="none">
+                        <circle cx="24" cy="24" r="21" stroke="currentColor" stroke-width="2"/>
+                        <path d="M24 6 L24 42 M8 20 Q24 15 40 20 M8 32 Q24 27 40 32" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                        <path d="M15 9 Q24 22 24 42" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+                    </svg>
+                    <span>Il Veliero</span>
+                </div>
+                <nav class="footer-links">
+                    <a href="#chi-siamo">La Spiaggia</a>
+
+                    <a href="#galleria">Galleria</a>
+
+                    <a href="#come-raggiungerci">Come Raggiungerci</a>
+                </nav>
+                <div class="footer-contact-info">
+                    <p>Via Aldo Moro, 26 · 65015 Montesilvano (PE)</p>
+                    <p>+39 393 121 0494 · info@ilveliero.it</p>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; 2025 Il Veliero Stabilimento Balneare. Tutti i diritti riservati.</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
