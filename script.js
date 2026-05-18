@@ -199,3 +199,92 @@ if (shipVideo && heroSection) {
         }).catch(() => {});
     }, { once: true, passive: true });
 }
+
+// ============================
+// COOKIE CONSENT
+// ============================
+(function () {
+    const STORAGE_KEY = 'ilveliero_cookie_prefs';
+
+    const banner  = document.getElementById('cookieBanner');
+    const modal   = document.getElementById('cookieModal');
+    const togAnalytics = document.getElementById('cookieAnalytics');
+    const togMarketing = document.getElementById('cookieMarketing');
+
+    function getPrefs() {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch { return null; }
+    }
+
+    function savePrefs(prefs) {
+        prefs.savedAt = Date.now();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+    }
+
+    function applyPrefs(_prefs) {
+        // Punto di estensione: caricare script analitici/marketing quando accettati
+        // if (_prefs.analytics) { /* load GA */ }
+        // if (_prefs.marketing) { /* load pixel */ }
+    }
+
+    function showBanner() {
+        // Piccolo ritardo per non bloccare il primo render
+        setTimeout(() => banner && banner.classList.add('visible'), 900);
+    }
+
+    function hideBanner() {
+        banner && banner.classList.remove('visible');
+    }
+
+    function openModal() {
+        const prefs = getPrefs();
+        if (togAnalytics) togAnalytics.checked = prefs ? !!prefs.analytics : false;
+        if (togMarketing) togMarketing.checked = prefs ? !!prefs.marketing : false;
+        if (modal) modal.classList.add('visible');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        if (modal) modal.classList.remove('visible');
+        document.body.style.overflow = '';
+    }
+
+    function acceptAll() {
+        const prefs = { necessary: true, analytics: true, marketing: true };
+        savePrefs(prefs);
+        applyPrefs(prefs);
+        hideBanner();
+        closeModal();
+    }
+
+    function rejectOptional() {
+        const prefs = { necessary: true, analytics: false, marketing: false };
+        savePrefs(prefs);
+        applyPrefs(prefs);
+        hideBanner();
+        closeModal();
+    }
+
+    // Init
+    const existing = getPrefs();
+    if (!existing) {
+        showBanner();
+    } else {
+        applyPrefs(existing);
+    }
+
+    // Banner
+    document.getElementById('cookieBtnAccept')?.addEventListener('click', acceptAll);
+    document.getElementById('cookieBtnReject')?.addEventListener('click', rejectOptional);
+    document.getElementById('cookieBtnManage')?.addEventListener('click', openModal);
+
+    // Modal
+    document.getElementById('cookieModalClose')?.addEventListener('click', closeModal);
+    document.getElementById('cookieModalReject')?.addEventListener('click', rejectOptional);
+    document.getElementById('cookieModalSave')?.addEventListener('click', saveCustom);
+
+    // Chiudi cliccando fuori dal modale
+    modal?.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+    // Bottone nel footer
+    document.getElementById('cookieSettingsBtn')?.addEventListener('click', openModal);
+}());
