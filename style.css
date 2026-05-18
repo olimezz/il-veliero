@@ -130,16 +130,18 @@ img { max-width: 100%; display: block; }
 }
 
 .btn-ghost {
-    background: rgba(212, 184, 150, 0.15); /* Effetto glass con tinta beige */
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: var(--beige);
     border: 1px solid var(--beige);
-    color: var(--beige);
+    color: var(--dark-brown);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+    font-weight: 700;
 }
 .btn-ghost:hover { 
-    background: var(--beige); 
+    background: var(--light-beige); 
+    border-color: var(--light-beige);
     color: var(--dark-brown);
     transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
 }
 
 .btn-glass-dark {
@@ -433,15 +435,16 @@ img { max-width: 100%; display: block; }
     font-size: clamp(3.8rem, 9vw, 7rem);
     font-weight: 700;
     line-height: 0.95;
-    color: var(--white);
+    color: #000000;
     margin-bottom: 28px;
     letter-spacing: -2px;
 }
 
 .hero-sub {
-    font-size: 1.08rem;
+    font-size: 1.35rem;
+    font-weight: 700;
     line-height: 1.75;
-    color: rgba(255,255,255,0.78);
+    color: var(--dark-brown);
     margin: 0 auto 44px;
     max-width: 500px;
 }
@@ -618,13 +621,13 @@ img { max-width: 100%; display: block; }
     border-radius: 20px;
     aspect-ratio: 4/3;
     object-fit: cover;
-    box-shadow: 0 20px 56px rgba(44,26,14,0.18);
+    box-shadow: 0 20px 56px rgba(44, 26, 14, 0.18);
 }
 .process-steps { display: flex; flex-direction: column; padding-top: 52px; }
 .process-step {
     display: flex; gap: 24px;
     padding: 32px 0;
-    border-bottom: 1px solid rgba(44,26,14,0.1);
+    border-bottom: 1px solid rgba(44, 26, 14, 0.1);
 }
 .process-step:last-child { border-bottom: none; }
 .step-num {
@@ -754,7 +757,6 @@ img { max-width: 100%; display: block; }
     overflow: hidden; cursor: grab;
     -webkit-user-select: none; user-select: none;
 }
-.carousel-wrapper.dragging { cursor: grabbing; }
 .carousel-track {
     display: flex; gap: 18px;
     overflow-x: scroll; scrollbar-width: none; -ms-overflow-style: none;
@@ -1167,4 +1169,404 @@ footer { background: var(--dark-brown); color: var(--white); }
     .gallery-slider-item .gallery-overlay h4 {
         font-size: 1.2rem;
     }
+}
+
+/* ==============================================
+   CALENDARIO SETTIMANALE
+   ============================================== */
+.calendario-section {
+    background: linear-gradient(160deg, var(--cream) 0%, var(--light-beige) 100%);
+}
+
+.calendario-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.cal-card {
+    background: var(--glass-bg-strong);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 32px 28px;
+    box-shadow: var(--glass-shadow);
+    position: relative;
+    overflow: hidden;
+    transition: transform var(--tr), box-shadow var(--tr);
+}
+.cal-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
+    pointer-events: none;
+}
+.cal-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 24px 56px rgba(44,26,14,0.18), 0 6px 16px rgba(44,26,14,0.08);
+}
+
+.cal-card--featured {
+    grid-column: span 2;
+    background: var(--dark-brown);
+    border-color: rgba(255,255,255,0.12);
+    box-shadow: 0 8px 32px rgba(44,26,14,0.35);
+}
+.cal-card--featured::before {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+}
+.cal-card--featured:hover {
+    box-shadow: 0 24px 56px rgba(44,26,14,0.45);
+}
+
+.cal-day-label {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--light-brown);
+    margin-bottom: 16px;
+}
+.cal-card--featured .cal-day-label { color: rgba(212,184,150,0.65); }
+
+.cal-icon {
+    width: 38px;
+    height: 38px;
+    color: var(--light-brown);
+    margin-bottom: 16px;
+}
+.cal-card--featured .cal-icon { color: var(--beige); }
+
+.cal-time {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--medium-brown);
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+.cal-card--featured .cal-time { color: var(--beige); }
+
+.cal-card h3 {
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    color: var(--dark-brown);
+    margin-bottom: 10px;
+    line-height: 1.3;
+}
+.cal-card--featured h3 {
+    color: var(--white);
+    font-size: 1.3rem;
+}
+
+.cal-desc {
+    font-size: 0.88rem;
+    color: var(--medium-brown);
+    line-height: 1.65;
+}
+.cal-card--featured .cal-desc { color: rgba(255,255,255,0.62); }
+
+.cal-note {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 5px 14px;
+    background: rgba(212,184,150,0.15);
+    border: 1px solid rgba(139,107,79,0.3);
+    border-radius: 100px;
+    font-size: 0.67rem;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--light-brown);
+}
+
+@media (max-width: 1024px) {
+    .calendario-grid { grid-template-columns: repeat(3, 1fr); }
+    .cal-card--featured { grid-column: span 2; }
+}
+
+@media (max-width: 768px) {
+    .calendario-grid { grid-template-columns: repeat(2, 1fr); }
+    .cal-card--featured { grid-column: span 2; }
+    .cal-card { padding: 24px 20px; }
+}
+
+@media (max-width: 480px) {
+    .calendario-grid { grid-template-columns: 1fr; gap: 14px; }
+    .cal-card--featured { grid-column: span 1; }
+}
+
+/* ==============================================
+   FOOTER BOTTOM
+   ============================================== */
+.footer-bottom-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* ==============================================
+   COOKIE BANNER & MODAL
+   ============================================== */
+.cookie-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    padding: 20px 24px;
+    background: rgba(44, 26, 14, 0.96);
+    backdrop-filter: blur(28px) saturate(1.5);
+    -webkit-backdrop-filter: blur(28px) saturate(1.5);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 -8px 40px rgba(44, 26, 14, 0.3);
+    transform: translateY(110%);
+    transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.cookie-banner.visible { transform: translateY(0); }
+
+.cookie-banner-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    flex-wrap: wrap;
+}
+
+.cookie-banner-text { flex: 1; min-width: 260px; }
+
+.cookie-banner-title {
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: var(--beige);
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+}
+
+.cookie-banner-text p:last-child {
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.58);
+    line-height: 1.6;
+}
+
+.cookie-banner-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+    align-items: center;
+}
+
+/* btn-glass-dark ha testo scuro di default: sul banner scuro va schiarito */
+.cookie-banner .btn-glass-dark {
+    color: var(--beige);
+    border-color: rgba(212, 184, 150, 0.35);
+    background: rgba(212, 184, 150, 0.1);
+}
+.cookie-banner .btn-glass-dark:hover {
+    background: var(--beige);
+    color: var(--dark-brown);
+    border-color: var(--beige);
+}
+
+/* Modal overlay */
+.cookie-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(44, 26, 14, 0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s var(--ease);
+}
+.cookie-modal-overlay.visible {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.cookie-modal {
+    background: rgba(250, 243, 234, 0.98);
+    backdrop-filter: blur(32px) saturate(1.6);
+    -webkit-backdrop-filter: blur(32px) saturate(1.6);
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    border-radius: 28px;
+    box-shadow: 0 32px 80px rgba(44, 26, 14, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    max-width: 540px;
+    width: 100%;
+    transform: scale(0.95) translateY(18px);
+    transition: transform 0.35s var(--ease);
+}
+.cookie-modal-overlay.visible .cookie-modal {
+    transform: scale(1) translateY(0);
+}
+
+.cookie-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 28px 32px 20px;
+    border-bottom: 1px solid rgba(44, 26, 14, 0.08);
+}
+.cookie-modal-header h3 {
+    font-family: var(--font-serif);
+    font-size: 1.3rem;
+    color: var(--dark-brown);
+    font-weight: 700;
+}
+
+.cookie-modal-close {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(44, 26, 14, 0.07);
+    border: 1px solid rgba(44, 26, 14, 0.1);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    color: var(--medium-brown);
+    transition: all var(--tr);
+    line-height: 1;
+    font-family: var(--font-sans);
+}
+.cookie-modal-close:hover {
+    background: var(--dark-brown);
+    color: var(--white);
+    border-color: var(--dark-brown);
+}
+
+.cookie-modal-body {
+    padding: 20px 32px 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.cookie-modal-intro {
+    font-size: 0.86rem;
+    color: var(--medium-brown);
+    line-height: 1.72;
+    margin-bottom: 16px;
+}
+
+.cookie-option {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 18px 0;
+    border-bottom: 1px solid rgba(44, 26, 14, 0.07);
+}
+.cookie-option:last-child { border-bottom: none; }
+
+.cookie-option-info { flex: 1; }
+.cookie-option-info strong {
+    display: block;
+    font-size: 0.88rem;
+    color: var(--dark-brown);
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+.cookie-option-info p {
+    font-size: 0.78rem;
+    color: var(--medium-brown);
+    line-height: 1.55;
+}
+
+/* Toggle switch */
+.cookie-toggle { flex-shrink: 0; position: relative; }
+.cookie-toggle input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.cookie-toggle label {
+    display: block;
+    width: 48px;
+    height: 26px;
+    background: rgba(44, 26, 14, 0.14);
+    border-radius: 100px;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.3s var(--ease), border-color 0.3s var(--ease);
+    border: 1px solid rgba(44, 26, 14, 0.12);
+}
+.cookie-toggle label::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: var(--white);
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s var(--ease);
+    box-shadow: 0 2px 6px rgba(44, 26, 14, 0.22);
+}
+.cookie-toggle input:checked + label {
+    background: var(--medium-brown);
+    border-color: var(--medium-brown);
+}
+.cookie-toggle input:checked + label::after {
+    transform: translateX(22px);
+}
+.cookie-toggle--disabled label { cursor: not-allowed; opacity: 0.6; }
+.cookie-toggle--disabled input:checked + label {
+    background: var(--light-brown);
+    border-color: var(--light-brown);
+}
+
+.cookie-modal-footer {
+    display: flex;
+    gap: 12px;
+    padding: 20px 32px 28px;
+    border-top: 1px solid rgba(44, 26, 14, 0.08);
+    justify-content: flex-end;
+}
+
+/* Gestisci Cookie in footer */
+.cookie-settings-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.73rem;
+    color: rgba(255, 255, 255, 0.32);
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: var(--font-sans);
+    letter-spacing: 0.3px;
+    transition: color var(--tr);
+    padding: 0;
+}
+.cookie-settings-link:hover { color: var(--beige); }
+
+@media (max-width: 768px) {
+    .cookie-banner-inner {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+    }
+    .cookie-banner-actions { width: 100%; justify-content: flex-start; }
+
+    .cookie-modal-header,
+    .cookie-modal-body,
+    .cookie-modal-footer { padding-left: 22px; padding-right: 22px; }
+
+    .cookie-modal-footer { flex-wrap: wrap; }
+    .cookie-modal-footer .btn { flex: 1; justify-content: center; }
+
+    .footer-bottom-inner { flex-direction: column; align-items: center; gap: 8px; }
 }
