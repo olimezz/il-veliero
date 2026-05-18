@@ -2,6 +2,19 @@
    DESIGN SYSTEM — Il Veliero
    Glassmorphism · Beach Luxury · Apple VisionOS
    =================================================== */
+
+/* === LOCAL FONTS === */
+@font-face { font-family: 'JosefinSans'; src: url('font/JosefinSans-Thin.ttf') format('truetype'); font-weight: 100; font-style: normal; }
+@font-face { font-family: 'JosefinSans'; src: url('font/JosefinSans-ThinItalic.ttf') format('truetype'); font-weight: 100; font-style: italic; }
+@font-face { font-family: 'JosefinSans'; src: url('font/JosefinSans-Light.ttf') format('truetype'); font-weight: 300; font-style: normal; }
+@font-face { font-family: 'JosefinSans'; src: url('font/JosefinSans-LightItalic.ttf') format('truetype'); font-weight: 300; font-style: italic; }
+@font-face { font-family: 'JosefinSans'; src: url('font/JosefinSans-Regular.ttf') format('truetype'); font-weight: 400; font-style: normal; }
+@font-face { font-family: 'JosefinSans'; src: url('font/JosefinSans-Italic.ttf') format('truetype'); font-weight: 400; font-style: italic; }
+@font-face { font-family: 'JosefinSans'; src: url('font/JosefinSans-SemiBold.ttf') format('truetype'); font-weight: 600; font-style: normal; }
+@font-face { font-family: 'JosefinSans'; src: url('font/JosefinSans-SemiBoldItalic.ttf') format('truetype'); font-weight: 600; font-style: italic; }
+@font-face { font-family: 'JosefinSans'; src: url('font/JosefinSans-Bold.ttf') format('truetype'); font-weight: 700; font-style: normal; }
+@font-face { font-family: 'JosefinSans'; src: url('font/JosefinSans-BoldItalic.ttf') format('truetype'); font-weight: 700; font-style: italic; }
+
 :root {
     --dark-brown:   #2c1a0e;
     --medium-brown: #5c3d2e;
@@ -17,8 +30,8 @@
     --glass-shadow:     0 8px 32px rgba(44, 26, 14, 0.13), 0 2px 6px rgba(44, 26, 14, 0.07), inset 0 1px 0 rgba(255,255,255,0.72);
     --glass-blur:       blur(24px) saturate(1.6);
 
-    --font-serif: 'Playfair Display', Georgia, serif;
-    --font-sans:  'Montserrat', system-ui, sans-serif;
+    --font-serif: 'JosefinSans', system-ui, sans-serif;
+    --font-sans:  'JosefinSans', system-ui, sans-serif;
 
     --ease: cubic-bezier(0.4, 0, 0.2, 1);
     --tr:   0.35s var(--ease);
@@ -243,6 +256,24 @@ img { max-width: 100%; display: block; }
     flex-shrink: 0;
     transition: color var(--tr);
 }
+.logo-img {
+    height: 52px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+    transition: transform var(--tr);
+}
+.logo-img:hover {
+    transform: scale(1.04);
+}
+.logo-img--footer {
+    height: 64px;
+    filter: brightness(0) invert(1);
+    transition: transform var(--tr);
+}
+.logo-img--footer:hover {
+    transform: scale(1.04);
+}
 #header.scrolled .logo { color: var(--beige); }
 
 .desktop-nav { flex: 1; }
@@ -450,7 +481,24 @@ img { max-width: 100%; display: block; }
    ============================================== */
 .stats-strip {
     background: var(--dark-brown);
-    padding: 56px 0;
+    padding: 72px 0;
+}
+.stats-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 48px;
+}
+.stat-logo-img {
+    height: 80px;
+    width: auto;
+    object-fit: contain;
+    opacity: 0.85;
+    transition: transform var(--tr), opacity var(--tr);
+}
+.stat-logo-img:hover {
+    transform: scale(1.06);
+    opacity: 1;
 }
 .stats-grid {
     display: grid;
@@ -1098,7 +1146,7 @@ footer { background: var(--dark-brown); color: var(--white); }
 }
 
 .gallery-slider-item .gallery-overlay h4 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'JosefinSans', system-ui, sans-serif;
     font-size: 1.5rem;
     margin: 0;
     font-weight: 500;

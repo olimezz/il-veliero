@@ -84,7 +84,7 @@ document.querySelectorAll('.stat-num').forEach(el => countObserver.observe(el));
 
 // ============================
 // HERO VIDEO SCROLL SCRUB + TEXT REVEAL
-// Lerp-based smooth scrubbing in both scroll directions
+// Adaptive-lerp + fastSeek for smooth scrubbing in both directions
 // ============================
 const shipVideo   = document.getElementById('shipAnim');
 const heroSection = document.getElementById('home');
@@ -93,42 +93,63 @@ const heroText    = document.getElementById('heroText');
 if (shipVideo && heroSection) {
     let duration        = 0;
     let rafId           = null;
-    let targetProgress  = 0;   // dove lo scroll VUOLE che siamo
-    let currentProgress = 0;   // dove il video SI TROVA effettivamente
+    let targetProgress  = 0;
+    let currentProgress = 0;
 
-    // Fattore di lerp: 0.1 = fluido e morbido, 0.2 = più reattivo
-    const LERP = 0.10;
+    // Traccia velocità di scroll per adattare il lerp dinamicamente
+    let lastTarget      = 0;
+    let scrollVelocity  = 0;
+
+    // fastSeek() è più veloce di currentTime per seek rapidi (supportato su Firefox/Safari)
+    const seekTo = (t) => {
+        if (typeof shipVideo.fastSeek === 'function') {
+            shipVideo.fastSeek(t);
+        } else {
+            shipVideo.currentTime = t;
+        }
+    };
 
     // ---- Calcola il progresso target dallo scroll corrente ----
     const getTargetProgress = () => {
-        const rect     = heroSection.getBoundingClientRect();
-        const heroH    = heroSection.offsetHeight;
-        const vpH      = window.innerHeight;
-        const scrolled = -rect.top;
+        const rect      = heroSection.getBoundingClientRect();
+        const heroH     = heroSection.offsetHeight;
+        const vpH       = window.innerHeight;
+        const scrolled  = -rect.top;
         const maxScroll = Math.max(1, heroH - vpH);
         return Math.max(0, Math.min(1, scrolled / maxScroll));
     };
 
-    // ---- Loop RAF: interpola e aggiorna il video ----
+    // ---- Loop RAF: lerp adattivo basato su velocità e direzione ----
     const animate = () => {
         const diff = targetProgress - currentProgress;
 
-        // Ferma il loop quando la differenza è trascurabile
-        if (Math.abs(diff) < 0.0003) {
+        // Snap finale: chiudi la differenza residua
+        if (Math.abs(diff) < 0.0002) {
             currentProgress = targetProgress;
+            if (duration) shipVideo.currentTime = currentProgress * duration;
             rafId = null;
             return;
         }
 
-        // Lerp: sposta currentProgress verso targetProgress
-        currentProgress += diff * LERP;
+        // Velocità di scroll (quanto sta cambiando il target per frame)
+        // Più è alta, più il lerp deve essere aggressivo per stare al passo
+        const absVel = Math.abs(scrollVelocity);
+
+        let lerp;
+        if (diff > 0) {
+            // Avanzare: lerp base + boost proporzionale alla velocità
+            lerp = 0.12 + Math.min(absVel * 4, 0.25);
+        } else {
+            // Reverse: lerp più alto di base + boost ancora maggiore
+            // In reverse il decoder è più lento → serve stare più vicino al target
+            lerp = 0.22 + Math.min(absVel * 6, 0.40);
+        }
+
+        currentProgress += diff * Math.min(lerp, 0.85);
 
         if (duration) {
-            const t = currentProgress * duration;
-            // Imposta currentTime solo se il delta è visibile (≥ 1 frame a 30fps)
-            if (Math.abs(shipVideo.currentTime - t) > 0.016) {
-                shipVideo.currentTime = t;
-            }
+            const t = Math.max(0, Math.min(duration, currentProgress * duration));
+            seekTo(t);
         }
 
         // Reveal del testo hero
@@ -143,7 +164,13 @@ if (shipVideo && heroSection) {
 
     // ---- Kick-off del loop ----
     const startLoop = () => {
-        targetProgress = getTargetProgress();
+        const newTarget = getTargetProgress();
+        // Velocità = variazione del target per chiamata (scroll event throttled ~60fps)
+        // Smoothing esponenziale per evitare spike improvvisi
+        const rawVel = Math.abs(newTarget - lastTarget);
+        scrollVelocity = scrollVelocity * 0.6 + rawVel * 0.4;
+        lastTarget     = newTarget;
+        targetProgress = newTarget;
         if (!rafId) rafId = requestAnimationFrame(animate);
     };
 
