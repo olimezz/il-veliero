@@ -145,15 +145,18 @@ if (shipVideo && heroSection) {
     } else {
         // ====================================================
         // MODALITÀ DESKTOP: scroll-scrub adattivo con lerp
-        // (comportamento originale invariato)
+        // Codice originale — NON chiamare play() per evitare il tasto play
         // ====================================================
         let duration        = 0;
         let rafId           = null;
         let targetProgress  = 0;
         let currentProgress = 0;
+
+        // Traccia velocità di scroll per adattare il lerp dinamicamente
         let lastTarget      = 0;
         let scrollVelocity  = 0;
 
+        // fastSeek() è più veloce di currentTime per seek rapidi (supportato su Firefox/Safari)
         const seekTo = (t) => {
             if (typeof shipVideo.fastSeek === 'function') {
                 shipVideo.fastSeek(t);
@@ -162,6 +165,7 @@ if (shipVideo && heroSection) {
             }
         };
 
+        // ---- Calcola il progresso target dallo scroll corrente ----
         const getTargetProgress = () => {
             const rect      = heroSection.getBoundingClientRect();
             const heroH     = heroSection.offsetHeight;
@@ -171,9 +175,11 @@ if (shipVideo && heroSection) {
             return Math.max(0, Math.min(1, scrolled / maxScroll));
         };
 
+        // ---- Loop RAF: lerp adattivo basato su velocità e direzione ----
         const animate = () => {
             const diff = targetProgress - currentProgress;
 
+            // Snap finale: chiudi la differenza residua
             if (Math.abs(diff) < 0.0002) {
                 currentProgress = targetProgress;
                 if (duration) shipVideo.currentTime = currentProgress * duration;
@@ -181,11 +187,17 @@ if (shipVideo && heroSection) {
                 return;
             }
 
+            // Velocità di scroll (quanto sta cambiando il target per frame)
+            // Più è alta, più il lerp deve essere aggressivo per stare al passo
             const absVel = Math.abs(scrollVelocity);
+
             let lerp;
             if (diff > 0) {
+                // Avanzare: lerp base + boost proporzionale alla velocità
                 lerp = 0.12 + Math.min(absVel * 4, 0.25);
             } else {
+                // Reverse: lerp più alto di base + boost ancora maggiore
+                // In reverse il decoder è più lento → serve stare più vicino al target
                 lerp = 0.22 + Math.min(absVel * 6, 0.40);
             }
 
@@ -196,6 +208,7 @@ if (shipVideo && heroSection) {
                 seekTo(t);
             }
 
+            // Reveal del testo hero
             if (heroText) {
                 const fadeT = Math.max(0, Math.min(1, (currentProgress - 0.4) / 0.4));
                 heroText.style.opacity   = fadeT;
@@ -205,8 +218,11 @@ if (shipVideo && heroSection) {
             rafId = requestAnimationFrame(animate);
         };
 
+        // ---- Kick-off del loop ----
         const startLoop = () => {
             const newTarget = getTargetProgress();
+            // Velocità = variazione del target per chiamata (scroll event throttled ~60fps)
+            // Smoothing esponenziale per evitare spike improvvisi
             const rawVel = Math.abs(newTarget - lastTarget);
             scrollVelocity = scrollVelocity * 0.6 + rawVel * 0.4;
             lastTarget     = newTarget;
@@ -214,41 +230,30 @@ if (shipVideo && heroSection) {
             if (!rafId) rafId = requestAnimationFrame(animate);
         };
 
-        // Sblocca il video con un ciclo play/pause (necessario per seeking)
-        const unlockVideo = () => {
-            shipVideo.play().then(() => {
-                shipVideo.pause();
-                shipVideo.currentTime = 0;
-                startLoop();
-            }).catch(() => {});
-        };
-
+        // ---- Init: quando i metadati del video sono disponibili ----
         const init = () => {
-            if (duration) return;
+            if (duration) return; // già inizializzato
             duration = shipVideo.duration;
-            // Ciclo play→pause per sbloccare seeking e rimuovere tasto play nativo
-            unlockVideo();
+            shipVideo.currentTime = 0;
+            startLoop();
         };
 
         shipVideo.addEventListener('loadedmetadata', init);
         shipVideo.addEventListener('canplay',        init);
+
+        // Fallback: video già in cache
         if (shipVideo.readyState >= 1 && shipVideo.duration) init();
 
         window.addEventListener('scroll', startLoop, { passive: true });
         window.addEventListener('resize', startLoop, { passive: true });
 
-        // Fallback: sblocca alla prima interazione utente (mouse o touch)
-        const unlockOnce = () => {
-            unlockVideo();
-            window.removeEventListener('mouseover', unlockOnce);
-            window.removeEventListener('click', unlockOnce);
-            window.removeEventListener('scroll', unlockOnce);
-            window.removeEventListener('touchstart', unlockOnce);
-        };
-        window.addEventListener('mouseover', unlockOnce, { once: true, passive: true });
-        window.addEventListener('click', unlockOnce, { once: true, passive: true });
-        window.addEventListener('scroll', unlockOnce, { once: true, passive: true });
-        window.addEventListener('touchstart', unlockOnce, { once: true, passive: true });
+        // --- Mobile: sblocca il seeking al primo tocco ----
+        window.addEventListener('touchstart', () => {
+            shipVideo.play().then(() => {
+                shipVideo.pause();
+                startLoop();
+            }).catch(() => {});
+        }, { once: true, passive: true });
     }
 }
 
