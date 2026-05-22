@@ -214,11 +214,20 @@ if (shipVideo && heroSection) {
             if (!rafId) rafId = requestAnimationFrame(animate);
         };
 
+        // Sblocca il video con un ciclo play/pause (necessario per seeking)
+        const unlockVideo = () => {
+            shipVideo.play().then(() => {
+                shipVideo.pause();
+                shipVideo.currentTime = 0;
+                startLoop();
+            }).catch(() => {});
+        };
+
         const init = () => {
             if (duration) return;
             duration = shipVideo.duration;
-            shipVideo.currentTime = 0;
-            startLoop();
+            // Ciclo play→pause per sbloccare seeking e rimuovere tasto play nativo
+            unlockVideo();
         };
 
         shipVideo.addEventListener('loadedmetadata', init);
@@ -228,13 +237,18 @@ if (shipVideo && heroSection) {
         window.addEventListener('scroll', startLoop, { passive: true });
         window.addEventListener('resize', startLoop, { passive: true });
 
-        // Sblocca seeking su browser che richiedono interazione utente
-        window.addEventListener('touchstart', () => {
-            shipVideo.play().then(() => {
-                shipVideo.pause();
-                startLoop();
-            }).catch(() => {});
-        }, { once: true, passive: true });
+        // Fallback: sblocca alla prima interazione utente (mouse o touch)
+        const unlockOnce = () => {
+            unlockVideo();
+            window.removeEventListener('mouseover', unlockOnce);
+            window.removeEventListener('click', unlockOnce);
+            window.removeEventListener('scroll', unlockOnce);
+            window.removeEventListener('touchstart', unlockOnce);
+        };
+        window.addEventListener('mouseover', unlockOnce, { once: true, passive: true });
+        window.addEventListener('click', unlockOnce, { once: true, passive: true });
+        window.addEventListener('scroll', unlockOnce, { once: true, passive: true });
+        window.addEventListener('touchstart', unlockOnce, { once: true, passive: true });
     }
 }
 
