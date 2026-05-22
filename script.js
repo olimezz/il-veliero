@@ -98,13 +98,6 @@ if (shipVideo && heroSection) {
     shipVideo.playsInline = true;
     shipVideo.loop        = false; // Non va in loop, si ferma alla fine
     shipVideo.autoplay    = true;
-    
-    // Attributi per forzare i browser (soprattutto mobile) ad accettare l'autoplay muto
-    shipVideo.setAttribute('muted', '');
-    shipVideo.setAttribute('playsinline', '');
-    shipVideo.setAttribute('autoplay', '');
-    shipVideo.removeAttribute('loop');
-    shipVideo.removeAttribute('preload');
 
     // Mostra subito il testo hero
     if (heroText) {
@@ -115,7 +108,7 @@ if (shipVideo && heroSection) {
         }, 300);
     }
 
-    // Avvia la riproduzione
+    // Avvia la riproduzione (se il browser non l'ha già fatto nativamente)
     const tryPlay = () => {
         shipVideo.play().catch(() => {
             // Fallback: se bloccato dal browser aspetta interazione utente (click/scroll/touch)
@@ -135,8 +128,6 @@ if (shipVideo && heroSection) {
         tryPlay();
     } else {
         shipVideo.addEventListener('canplay', tryPlay, { once: true });
-        // Forza il caricamento
-        shipVideo.load();
     }
 }
 
