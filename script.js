@@ -83,121 +83,157 @@ document.querySelectorAll('.stat-num').forEach(el => countObserver.observe(el));
 
 
 // ============================
-// HERO VIDEO SCROLL SCRUB + TEXT REVEAL
-// Adaptive-lerp + fastSeek for smooth scrubbing in both directions
+// HERO VIDEO — Desktop scroll-scrub / Mobile autoplay loop
 // ============================
 const shipVideo   = document.getElementById('shipAnim');
 const heroSection = document.getElementById('home');
 const heroText    = document.getElementById('heroText');
 
 if (shipVideo && heroSection) {
-    let duration        = 0;
-    let rafId           = null;
-    let targetProgress  = 0;
-    let currentProgress = 0;
 
-    // Traccia velocità di scroll per adattare il lerp dinamicamente
-    let lastTarget      = 0;
-    let scrollVelocity  = 0;
+    // ---- Rileva mobile (pointer grossolano o schermo stretto) ----
+    const isMobile = () =>
+        window.matchMedia('(max-width: 768px)').matches ||
+        window.matchMedia('(pointer: coarse)').matches;
 
-    // fastSeek() è più veloce di currentTime per seek rapidi (supportato su Firefox/Safari)
-    const seekTo = (t) => {
-        if (typeof shipVideo.fastSeek === 'function') {
-            shipVideo.fastSeek(t);
-        } else {
-            shipVideo.currentTime = t;
-        }
-    };
+    // ====================================================
+    // MODALITÀ MOBILE: autoplay loop, nessun seeking
+    // Il video gira come sfondo animato senza jank
+    // ====================================================
+    const initMobile = () => {
+        shipVideo.setAttribute('autoplay', '');
+        shipVideo.setAttribute('loop', '');
+        shipVideo.muted = true;
+        shipVideo.playsInline = true;
+        // Riduci la qualità del rendering per risparmiare risorse GPU
+        shipVideo.style.willChange = 'auto';
 
-    // ---- Calcola il progresso target dallo scroll corrente ----
-    const getTargetProgress = () => {
-        const rect      = heroSection.getBoundingClientRect();
-        const heroH     = heroSection.offsetHeight;
-        const vpH       = window.innerHeight;
-        const scrolled  = -rect.top;
-        const maxScroll = Math.max(1, heroH - vpH);
-        return Math.max(0, Math.min(1, scrolled / maxScroll));
-    };
-
-    // ---- Loop RAF: lerp adattivo basato su velocità e direzione ----
-    const animate = () => {
-        const diff = targetProgress - currentProgress;
-
-        // Snap finale: chiudi la differenza residua
-        if (Math.abs(diff) < 0.0002) {
-            currentProgress = targetProgress;
-            if (duration) shipVideo.currentTime = currentProgress * duration;
-            rafId = null;
-            return;
-        }
-
-        // Velocità di scroll (quanto sta cambiando il target per frame)
-        // Più è alta, più il lerp deve essere aggressivo per stare al passo
-        const absVel = Math.abs(scrollVelocity);
-
-        let lerp;
-        if (diff > 0) {
-            // Avanzare: lerp base + boost proporzionale alla velocità
-            lerp = 0.12 + Math.min(absVel * 4, 0.25);
-        } else {
-            // Reverse: lerp più alto di base + boost ancora maggiore
-            // In reverse il decoder è più lento → serve stare più vicino al target
-            lerp = 0.22 + Math.min(absVel * 6, 0.40);
-        }
-
-        currentProgress += diff * Math.min(lerp, 0.85);
-
-        if (duration) {
-            const t = Math.max(0, Math.min(duration, currentProgress * duration));
-            seekTo(t);
-        }
-
-        // Reveal del testo hero
+        // Mostra subito il testo hero senza attendere lo scroll
         if (heroText) {
-            const fadeT = Math.max(0, Math.min(1, (currentProgress - 0.4) / 0.4));
-            heroText.style.opacity   = fadeT;
-            heroText.style.transform = `translateY(${(1 - fadeT) * 30}px)`;
+            heroText.style.transition = 'opacity 1.2s ease, transform 1.2s ease';
+            heroText.style.opacity    = '1';
+            heroText.style.transform  = 'translateY(0)';
         }
 
-        rafId = requestAnimationFrame(animate);
+        // Avvia la riproduzione
+        const tryPlay = () => {
+            shipVideo.play().catch(() => {
+                // Fallback: aspetta interazione utente
+                document.addEventListener('touchstart', () => {
+                    shipVideo.play().catch(() => {});
+                }, { once: true, passive: true });
+            });
+        };
+
+        if (shipVideo.readyState >= 2) {
+            tryPlay();
+        } else {
+            shipVideo.addEventListener('canplay', tryPlay, { once: true });
+        }
     };
 
-    // ---- Kick-off del loop ----
-    const startLoop = () => {
-        const newTarget = getTargetProgress();
-        // Velocità = variazione del target per chiamata (scroll event throttled ~60fps)
-        // Smoothing esponenziale per evitare spike improvvisi
-        const rawVel = Math.abs(newTarget - lastTarget);
-        scrollVelocity = scrollVelocity * 0.6 + rawVel * 0.4;
-        lastTarget     = newTarget;
-        targetProgress = newTarget;
-        if (!rafId) rafId = requestAnimationFrame(animate);
-    };
+    // ====================================================
+    // MODALITÀ DESKTOP: scroll-scrub adattivo con lerp
+    // ====================================================
+    const initDesktop = () => {
+        let duration        = 0;
+        let rafId           = null;
+        let targetProgress  = 0;
+        let currentProgress = 0;
+        let lastTarget      = 0;
+        let scrollVelocity  = 0;
+        let scrollRafPending = false;
 
-    // ---- Init: quando i metadati del video sono disponibili ----
-    const init = () => {
-        if (duration) return; // già inizializzato
-        duration = shipVideo.duration;
-        shipVideo.currentTime = 0;
-        startLoop();
-    };
+        // fastSeek() è più veloce di currentTime per seek rapidi
+        const seekTo = (t) => {
+            if (typeof shipVideo.fastSeek === 'function') {
+                shipVideo.fastSeek(t);
+            } else {
+                shipVideo.currentTime = t;
+            }
+        };
 
-    shipVideo.addEventListener('loadedmetadata', init);
-    shipVideo.addEventListener('canplay',        init);
+        // ---- Calcola il progresso target dallo scroll corrente ----
+        const getTargetProgress = () => {
+            const rect      = heroSection.getBoundingClientRect();
+            const heroH     = heroSection.offsetHeight;
+            const vpH       = window.innerHeight;
+            const scrolled  = -rect.top;
+            const maxScroll = Math.max(1, heroH - vpH);
+            return Math.max(0, Math.min(1, scrolled / maxScroll));
+        };
 
-    // Fallback: video già in cache
-    if (shipVideo.readyState >= 1 && shipVideo.duration) init();
+        // ---- Loop RAF: lerp adattivo basato su velocità e direzione ----
+        const animate = () => {
+            const diff = targetProgress - currentProgress;
 
-    window.addEventListener('scroll', startLoop, { passive: true });
-    window.addEventListener('resize', startLoop, { passive: true });
+            if (Math.abs(diff) < 0.0002) {
+                currentProgress = targetProgress;
+                if (duration) shipVideo.currentTime = currentProgress * duration;
+                rafId = null;
+                return;
+            }
 
-    // --- Mobile: sblocca il seeking al primo tocco ----
-    window.addEventListener('touchstart', () => {
-        shipVideo.play().then(() => {
-            shipVideo.pause();
+            const absVel = Math.abs(scrollVelocity);
+            let lerp;
+            if (diff > 0) {
+                lerp = 0.12 + Math.min(absVel * 4, 0.25);
+            } else {
+                lerp = 0.22 + Math.min(absVel * 6, 0.40);
+            }
+
+            currentProgress += diff * Math.min(lerp, 0.85);
+
+            if (duration) {
+                const t = Math.max(0, Math.min(duration, currentProgress * duration));
+                seekTo(t);
+            }
+
+            if (heroText) {
+                const fadeT = Math.max(0, Math.min(1, (currentProgress - 0.4) / 0.4));
+                heroText.style.opacity   = fadeT;
+                heroText.style.transform = `translateY(${(1 - fadeT) * 30}px)`;
+            }
+
+            rafId = requestAnimationFrame(animate);
+        };
+
+        // ---- Kick-off del loop (throttled via RAF) ----
+        const startLoop = () => {
+            if (scrollRafPending) return;
+            scrollRafPending = true;
+            requestAnimationFrame(() => {
+                scrollRafPending = false;
+                const newTarget = getTargetProgress();
+                const rawVel = Math.abs(newTarget - lastTarget);
+                scrollVelocity = scrollVelocity * 0.6 + rawVel * 0.4;
+                lastTarget     = newTarget;
+                targetProgress = newTarget;
+                if (!rafId) rafId = requestAnimationFrame(animate);
+            });
+        };
+
+        const init = () => {
+            if (duration) return;
+            duration = shipVideo.duration;
+            shipVideo.currentTime = 0;
             startLoop();
-        }).catch(() => {});
-    }, { once: true, passive: true });
+        };
+
+        shipVideo.addEventListener('loadedmetadata', init);
+        shipVideo.addEventListener('canplay',        init);
+        if (shipVideo.readyState >= 1 && shipVideo.duration) init();
+
+        window.addEventListener('scroll', startLoop, { passive: true });
+        window.addEventListener('resize', startLoop, { passive: true });
+    };
+
+    // ---- Scegli la modalità in base al dispositivo ----
+    if (isMobile()) {
+        initMobile();
+    } else {
+        initDesktop();
+    }
 }
 
 // ============================
@@ -264,6 +300,17 @@ if (shipVideo && heroSection) {
         closeModal();
     }
 
+    function saveCustom() {
+        const prefs = {
+            necessary: true,
+            analytics: togAnalytics ? togAnalytics.checked : false,
+            marketing: togMarketing ? togMarketing.checked : false,
+        };
+        savePrefs(prefs);
+        applyPrefs(prefs);
+        hideBanner();
+        closeModal();
+    }
     // Init
     const existing = getPrefs();
     if (!existing) {
