@@ -389,12 +389,13 @@ img { max-width: 100%; display: block; }
 }
 
 /* Rimuove tasti play residui su Safari/Chrome */
-.hero-bg-video::-webkit-media-controls-start-playback-button {
-    display: none !important;
-    -webkit-appearance: none;
-}
+.hero-bg-video::-webkit-media-controls-start-playback-button,
+.hero-bg-video::-webkit-media-controls-overlay-play-button,
+.hero-bg-video::-webkit-media-controls-panel,
 .hero-bg-video::-webkit-media-controls {
     display: none !important;
+    -webkit-appearance: none !important;
+    opacity: 0 !important;
 }
 
 .hero-overlay {
