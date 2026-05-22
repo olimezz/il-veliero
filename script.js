@@ -91,37 +91,46 @@ const heroText    = document.getElementById('heroText');
 
 if (shipVideo && heroSection) {
 
-    // ---- Rileva mobile (pointer grossolano o schermo stretto) ----
-    const isMobile = () =>
-        window.matchMedia('(max-width: 768px)').matches ||
-        window.matchMedia('(pointer: coarse)').matches;
+    // ---- Rileva mobile solo da larghezza schermo ----
+    // NON usare (pointer: coarse) perché cattura anche desktop touchscreen
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
 
-    // ====================================================
-    // MODALITÀ MOBILE: autoplay loop, nessun seeking
-    // Il video gira come sfondo animato senza jank
-    // ====================================================
-    const initMobile = () => {
-        shipVideo.setAttribute('autoplay', '');
-        shipVideo.setAttribute('loop', '');
-        shipVideo.muted = true;
+    if (isMobile) {
+        // ====================================================
+        // MODALITÀ MOBILE: autoplay loop, nessun seeking
+        // Il video gira come sfondo animato senza jank
+        // ====================================================
+        shipVideo.muted       = true;
         shipVideo.playsInline = true;
-        // Riduci la qualità del rendering per risparmiare risorse GPU
+        shipVideo.loop        = true;
+        shipVideo.autoplay    = true;
+        shipVideo.setAttribute('muted', '');
+        shipVideo.setAttribute('playsinline', '');
+        shipVideo.setAttribute('loop', '');
+        shipVideo.setAttribute('autoplay', '');
+        shipVideo.removeAttribute('preload');
         shipVideo.style.willChange = 'auto';
 
-        // Mostra subito il testo hero senza attendere lo scroll
+        // Mostra subito il testo hero
         if (heroText) {
             heroText.style.transition = 'opacity 1.2s ease, transform 1.2s ease';
-            heroText.style.opacity    = '1';
-            heroText.style.transform  = 'translateY(0)';
+            setTimeout(() => {
+                heroText.style.opacity   = '1';
+                heroText.style.transform = 'translateY(0)';
+            }, 300);
         }
 
         // Avvia la riproduzione
         const tryPlay = () => {
             shipVideo.play().catch(() => {
-                // Fallback: aspetta interazione utente
-                document.addEventListener('touchstart', () => {
+                // Fallback: aspetta prima interazione utente
+                const unlock = () => {
                     shipVideo.play().catch(() => {});
-                }, { once: true, passive: true });
+                    document.removeEventListener('touchstart', unlock);
+                    document.removeEventListener('click', unlock);
+                };
+                document.addEventListener('touchstart', unlock, { passive: true });
+                document.addEventListener('click', unlock, { passive: true });
             });
         };
 
@@ -129,22 +138,22 @@ if (shipVideo && heroSection) {
             tryPlay();
         } else {
             shipVideo.addEventListener('canplay', tryPlay, { once: true });
+            // Forza il caricamento nel caso load non sia partito
+            shipVideo.load();
         }
-    };
 
-    // ====================================================
-    // MODALITÀ DESKTOP: scroll-scrub adattivo con lerp
-    // ====================================================
-    const initDesktop = () => {
+    } else {
+        // ====================================================
+        // MODALITÀ DESKTOP: scroll-scrub adattivo con lerp
+        // (comportamento originale invariato)
+        // ====================================================
         let duration        = 0;
         let rafId           = null;
         let targetProgress  = 0;
         let currentProgress = 0;
         let lastTarget      = 0;
         let scrollVelocity  = 0;
-        let scrollRafPending = false;
 
-        // fastSeek() è più veloce di currentTime per seek rapidi
         const seekTo = (t) => {
             if (typeof shipVideo.fastSeek === 'function') {
                 shipVideo.fastSeek(t);
@@ -153,7 +162,6 @@ if (shipVideo && heroSection) {
             }
         };
 
-        // ---- Calcola il progresso target dallo scroll corrente ----
         const getTargetProgress = () => {
             const rect      = heroSection.getBoundingClientRect();
             const heroH     = heroSection.offsetHeight;
@@ -163,7 +171,6 @@ if (shipVideo && heroSection) {
             return Math.max(0, Math.min(1, scrolled / maxScroll));
         };
 
-        // ---- Loop RAF: lerp adattivo basato su velocità e direzione ----
         const animate = () => {
             const diff = targetProgress - currentProgress;
 
@@ -198,19 +205,13 @@ if (shipVideo && heroSection) {
             rafId = requestAnimationFrame(animate);
         };
 
-        // ---- Kick-off del loop (throttled via RAF) ----
         const startLoop = () => {
-            if (scrollRafPending) return;
-            scrollRafPending = true;
-            requestAnimationFrame(() => {
-                scrollRafPending = false;
-                const newTarget = getTargetProgress();
-                const rawVel = Math.abs(newTarget - lastTarget);
-                scrollVelocity = scrollVelocity * 0.6 + rawVel * 0.4;
-                lastTarget     = newTarget;
-                targetProgress = newTarget;
-                if (!rafId) rafId = requestAnimationFrame(animate);
-            });
+            const newTarget = getTargetProgress();
+            const rawVel = Math.abs(newTarget - lastTarget);
+            scrollVelocity = scrollVelocity * 0.6 + rawVel * 0.4;
+            lastTarget     = newTarget;
+            targetProgress = newTarget;
+            if (!rafId) rafId = requestAnimationFrame(animate);
         };
 
         const init = () => {
@@ -226,13 +227,14 @@ if (shipVideo && heroSection) {
 
         window.addEventListener('scroll', startLoop, { passive: true });
         window.addEventListener('resize', startLoop, { passive: true });
-    };
 
-    // ---- Scegli la modalità in base al dispositivo ----
-    if (isMobile()) {
-        initMobile();
-    } else {
-        initDesktop();
+        // Sblocca seeking su browser che richiedono interazione utente
+        window.addEventListener('touchstart', () => {
+            shipVideo.play().then(() => {
+                shipVideo.pause();
+                startLoop();
+            }).catch(() => {});
+        }, { once: true, passive: true });
     }
 }
 
